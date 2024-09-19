@@ -25,9 +25,10 @@ from django.dispatch import receiver
     #     return Profile.objects.filter(followers = self).count()
 
 class Profile(models.Model):
-    user = models.OneToOneField(User , on_delete=models.CASCADE)
+    user = models.OneToOneField(User ,on_delete=models.CASCADE)
     profile_pic = models.ImageField(upload_to='profile_pic/',blank=True, null=True)
     bio = models.CharField(max_length=100, blank=True, null=True)
+    follows = models.ManyToManyField("self", related_name='followed_by',symmetrical=False)
     
     def update_profile(self , data):
         self.profile_pic = data.get('profile_pic' ,self.profile_pic )
@@ -39,35 +40,27 @@ class Profile(models.Model):
         self.delete()
     
     def follow(self, profile):
-        return Follow.objects.create(follower = self , follow = profile)
+        return self.follows.add(profile)
     
     def unfollow(self , profile):
-        return Follow.objects.filter(follow = profile , follower = self).delete
+        return self.follows.remove(profile)
     
     def following(self):
-        return Follow.objects.filter(follower = self)
+        return self.follows.all()
     
-    def followers(self):
-        return Follow.objects.filter(follow = self)
+    def follower(self):
+        return self.followed_by.all()
     
     def following_count(self):
-        return Follow.objects.filter(follower = self).count
+        return self.follows.all().count()
     
     def followers_count(self):
-        return Follow.objects.filter(follow = self).count
-
-class Follow (models.Model):
-    follow = models.ForeignKey(Profile, related_name='follow', on_delete=models.CASCADE)
-    follower = models.ForeignKey(Profile, related_name='follower', on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        unique_together = ('follower', 'follow')  # Ensures no duplicate follows
-
+        return self.followed_by.all().count()
+ 
 @receiver(post_save , sender = User )
 def create_profile(sender , instance , created , **kwargs):
     if created:
         profile = Profile.objects.create(user = instance)
         ## making users follow themselves
-        Follow.objects.create(follow = profile , follower = profile)
+        profile.follow(profile=profile)
         
