@@ -5,6 +5,30 @@ from accounts.models import Profile
 
 # Create your models here.
 
+class PostManager():
+    @classmethod
+    def create_post(self ,data):
+        return Post.objects.create(**data)
+    
+    @classmethod
+    def delete_post(self,pk):
+        return get_object_or_404(Post , pk = pk).delete()
+    
+    @classmethod
+    def get_post(self,pk):
+        return get_object_or_404(Post , pk = pk)
+    
+    @classmethod
+    def update(self,instance,data):
+        instance.content = data.get('content' , instance.content)
+        instance.image = data.get('image' , instance.image)
+        instance.save()
+        return instance
+    
+    @classmethod
+    def get_posts(self,instance):
+        return instance.post.all()
+
 class Post(models.Model):
     author = models.ForeignKey(Profile, related_name='post', on_delete=models.CASCADE)
     content = models.TextField(max_length=500 , null= True)
@@ -12,30 +36,10 @@ class Post(models.Model):
     date = models.DateField(auto_now=True)
     time = models.TimeField(auto_now=True)
     
-    @staticmethod
-    def create_post(data):
-        return Post.objects.create(**data)
-    
-    def update(self ,data):
-        self.content = data.get('content' , self.content)
-        self.image = data.get('image' , self.image)
-        self.save()
-        return self
-    
-    @staticmethod
-    def delete_post(pk):
-        return get_object_or_404(Post , pk = pk).delete()
-    
-    @staticmethod
-    def get_post(pk):
-        return get_object_or_404(Post , pk = pk)
-    
-    @staticmethod
-    def get_posts(self):
-        return self.post.all()
+    objects = PostManager()
     
     
-    
+
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, related_name='comment', on_delete=models.CASCADE)
