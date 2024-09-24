@@ -11,13 +11,13 @@ class ProfileManager(models.Manager):
         profile.save()
         return profile
     
-    def delete_profile( profile):
+    def delete_profile(profile):
         profile.delete()
     
-    def follow(follower,follow ):
+    def follow(follower,follow):
         return follower.follows.add(follow)
     
-    def unfollow(follower,follow ):
+    def unfollow(follower,follow):
         return follower.follows.remove(follow)
     
     def following(profile):
