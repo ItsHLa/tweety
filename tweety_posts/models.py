@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
-from accounts.models import Profile
+
+from user_profile.models import Profile
+
 
 # Create your models here.
 
@@ -29,9 +31,9 @@ class PostManager(models.Manager):
     def who_liked(cls , pk):
         return get_object_or_404(Post , pk = pk).liked_by.all()
     
-    @classmethod
-    def total_likes(cls , pk):
-        return get_object_or_404(Post , pk = pk).liked_by.all().count()
+    # @classmethod
+    # def total_likes(cls , pk):
+    #     return get_object_or_404(Post , pk = pk).liked_by.all().count()
     
     @classmethod
     def add_like(cls,pk,user):
@@ -41,18 +43,22 @@ class PostManager(models.Manager):
     def remove_like(cls,pk,user):
         return get_object_or_404(Post,pk=pk).liked_by.remove(user)
     
-    @classmethod
-    def get_comments(cls,pk):
-        get_object_or_404(Post,pk=pk).author_comment.all()
+    # @classmethod
+    # def get_comments(cls,pk):
+    #     get_object_or_404(Post,pk=pk).author_comment.all()
+        
+    # @classmethod
+    # def total_comments(cls,pk):
+    #     get_object_or_404(Post,pk=pk).author_comment.all().count()
         
     @classmethod
-    def total_comments(cls,pk):
-        get_object_or_404(Post,pk=pk).author_comment.all().count()
+    def news_feeds(cls , profiles):
+        return Post.objects.all().filter(author__in =profiles)
     
     ## put in profile
-    @classmethod
-    def get_posts_by_author(cls,author):
-        return author.post.all()
+    # @classmethod
+    # def get_posts_by_author(cls,author):
+    #     return author.post.all()
 
 class Post(models.Model):
     author = models.ForeignKey(Profile, related_name='post', on_delete=models.CASCADE)

@@ -1,8 +1,9 @@
 from django.db import models
 from django.shortcuts import get_object_or_404
 
-from accounts.models import Profile
+
 from tweety_posts.models import Post
+from user_profile.models import Profile
 
 
 # Create your models here.

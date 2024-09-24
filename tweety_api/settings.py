@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'accounts',
+    'user_profile',
     'tweety_posts',
     'tweety_comments',
     'rest_framework',
