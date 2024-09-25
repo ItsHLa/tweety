@@ -8,55 +8,37 @@ from user_profile.models import Profile
 # Create your models here.
 
 class PostManager(models.Manager):
-    @classmethod
-    def create_post(cls ,data):
+    
+    def create_post(data):
         return Post.objects.create(**data)
     
-    @classmethod
-    def delete_post(cls,pk):
+    def delete_post(pk):
         return get_object_or_404(Post , pk = pk).delete()
     
-    @classmethod
-    def get_post(cls,pk):
+    def get_post(pk):
         return get_object_or_404(Post , pk = pk)
     
-    @classmethod
-    def update(cls,instance,data):
-        instance.content = data.get('content' , instance.content)
-        instance.image = data.get('image' , instance.image)
-        instance.save()
-        return instance
+    def update_post(post, data):
+        post.content = data.get('content' , post.content)
+        post.image = data.get('image' , post.image)
+        post.save()
+        return post
     
-    @classmethod
-    def who_liked(cls , pk):
-        return get_object_or_404(Post , pk = pk).liked_by.all()
+    def who_liked(pk):
+        return get_object_or_404(Post , pk = pk).like.all()
     
-    # @classmethod
-    # def total_likes(cls , pk):
-    #     return get_object_or_404(Post , pk = pk).liked_by.all().count()
     
-    @classmethod
-    def add_like(cls,pk,user):
-        return get_object_or_404(Post , pk = pk).like.add(user)
+    def add_like(pk, profile):
+        return get_object_or_404(Post , pk = pk).like.add(profile)
     
-    @classmethod
-    def remove_like(cls,pk,user):
-        return get_object_or_404(Post,pk=pk).liked_by.remove(user)
-    
-    # @classmethod
-    # def get_comments(cls,pk):
-    #     get_object_or_404(Post,pk=pk).author_comment.all()
+    def remove_like(pk, profile):
+        return get_object_or_404(Post,pk=pk).like.remove(profile)
         
-    # @classmethod
-    # def total_comments(cls,pk):
-    #     get_object_or_404(Post,pk=pk).author_comment.all().count()
-        
-    @classmethod
-    def news_feeds(cls , profiles):
+    def news_feeds(profiles):
         return Post.objects.all().filter(author__in =profiles)
     
     ## put in profile
-    # @classmethod
+
     # def get_posts_by_author(cls,author):
     #     return author.post.all()
 

@@ -2,9 +2,12 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from django.dispatch import  receiver
+
+from accounts.models import UserManager
 # Create your models here.
 
 class ProfileManager(models.Manager):
+    
     def update_profile(profile, data):
         profile.profile_pic = data.get('profile_pic' ,profile.profile_pic )
         profile.bio = data.get('bio' ,profile.bio )
@@ -12,7 +15,7 @@ class ProfileManager(models.Manager):
         return profile
     
     def delete_profile(profile):
-        profile.delete()
+        UserManager.delete()
     
     def follow(follower,follow):
         return follower.follows.add(follow)

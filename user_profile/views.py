@@ -1,5 +1,5 @@
 from .serializer import ProfileInfoSerializer, ProfileSerializer
-from .models import Profile
+from .models import Profile, ProfileManager
 from utils.status import Status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -21,9 +21,10 @@ class ProfileView(APIView):
         
     # delete 
     def delete(self, request, *args, **kwargs):
-        user = request.user
-        user.profile.delete_profile()
+        profile = request.user
+        ProfileManager.delete_profile(profile)
         return Response(status= Status.OK)
+    
     # update
     def put(self, request, *args, **kwargs):
         user = request.user
@@ -43,7 +44,7 @@ class FollowView(APIView):
         if not Profile.objects.filter(pk = pk).exists:
             return Response({'This profile dose not exists'},status= Status.NOT_FOUND)
         profile = Profile.objects.get(pk = pk)
-        user.profile.unfollow(profile = profile)
+        ProfileManager.unfollow(follow= profile,follower=user.profile)
         return Response({'msg':f'You unfollowed @{profile.user.username}'},status= Status.OK)
 
     def post(self, request, pk, *args, **kwargs):
@@ -51,21 +52,19 @@ class FollowView(APIView):
         if not Profile.objects.filter(pk = pk).exists:
             return Response({'This profile dose not exists'},status= Status.NOT_FOUND)
         profile = Profile.objects.get(pk = pk)
-        user.profile.unfollow(profile = profile)
-        return Response({'msg':f'You unfollowed @{profile.user.username}'},status= Status.OK)
+        ProfileManager.follow(follow= profile,follower=user.profile)
+        return Response({'msg':f'You followed @{profile.user.username}'},status= Status.OK)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_followers(request):
-    user = request.user
-    followers = user.profile.follower()
-    serializer = ProfileSerializer(followers , many = True)
-    return Response(serializer.data , status=Status.OK)
+class FollowersView(APIView):
+    def get(self, request, *args, **kwargs):
+        profile = request.user.profile
+        followers = ProfileManager.follower(profile)
+        serializer = ProfileSerializer(followers , many = True)
+        return Response(serializer.data , status=Status.OK)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_following(request):
-    user = request.user
-    follows = user.profile.following()
-    serializer = ProfileSerializer(follows , many = True)
-    return Response(serializer.data , status=Status.OK)
+class FollowingView(APIView):
+    def get(self, request, *args, **kwargs):
+        profile = request.user.profile
+        followers = ProfileManager.following(profile)
+        serializer = ProfileSerializer(followers , many = True)
+        return Response(serializer.data , status=Status.OK)

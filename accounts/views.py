@@ -1,24 +1,25 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+from rest_framework.permissions import IsAuthenticated
 
 from django.contrib.auth.models import User
-from accounts.serilalizer import  LoginSerializer, SignUpSerializer
+from accounts.serilalizer import  ChangePasswordSerializer, LoginSerializer, LogoutSerializer, SignUpSerializer, UserSerializer
 from accounts.utils import Tokens
 from utils.status import Status
 # Create your views here.
 
 
 class SignUpView(APIView):
-    
     def post(self, request, *args, **kwargs):
         data = request.data
-        serializer = SignUpSerializer(data=data)
+        serializer = SignUpSerializer(data=data , partial = True)
         if serializer.is_valid():
             email = serializer.validated_data['email']
-            if User.objects.filter().exists():
+            
+            if User.objects.filter(email =email).exists():
                 Response({"msg":"User already exists "} , status=Status.BAD_REQUEST)
+            
             user = serializer.save()
             token = Tokens.genarate_tokens(user)
             return Response({
@@ -50,62 +51,35 @@ class LoginView(APIView):
             },status=Status.OK)
         return Response(serializer.errors , status=Status.BAD_REQUEST)
 
-
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def follow(request , pk):
-#     user = request.user
-#     if not Profile.objects.filter(pk = pk).exists:
-#         return Response({'This profile dose not exists'},status=status.HTTP_404_NOT_FOUND)
-#     profile = Profile.objects.get(pk = pk)
-#     user.profile.follow(profile)
-#     return Response({'msg':f'You follow @{profile.user.username} now!'},status=status.HTTP_200_OK)
+class UpdateUserInfoView(APIView):
+    permission_classes = [IsAuthenticated]
     
+    def put(self, request, *args, **kwargs):
+        user = request.user
+        data = request.data
+        serializer = UserSerializer(instance=user, data = data, partial = True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data , status=Status.OK)
+        return Response(serializer.errors ,status=Status.BAD_REQUEST)
+
+class LogoutView(APIView):
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        serializer = LogoutSerializer(data=data)
+        if serializer.is_valid():
+            Tokens.blacklist_token(serializer.validated_data['refresh'])
+            return Response({"msg":"Sad to see you go :("},status=Status.OK)
+        return Response(serializer.errors ,status=Status.BAD_REQUEST)
     
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def unfollow(request , pk ):
-#     user = request.user
-#     if not Profile.objects.filter(pk = pk).exists:
-#         return Response({'This profile dose not exists'},status=status.HTTP_404_NOT_FOUND)
-#     profile = Profile.objects.get(pk = pk)
-#     user.profile.unfollow(profile = profile)
-#     return Response({'msg':f'You unfollowed @{profile.user.username}'},status=status.HTTP_200_OK)
-    
-    
-
-
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
-# def profile_info(request):
-#     user = request.user
-#     follow_count = user.profile.following_count()
-#     follower_count = user.profile.followers_count()
-#     serializer = ProfileSerializer(instance=user.profile)
-#     return Response({
-#         'info':serializer.data,
-#         'followers_count':follower_count,
-#         'follows_count':follow_count} , status=status.HTTP_200_OK)
-
-# @api_view(['PUT'])
-# @permission_classes([IsAuthenticated])
-# def profile_update(request):
-#     user = request.user
-#     data = request.data
-#     serializer = ProfileSerializer(instance=user.profile , data=data , partial = True)
-#     if serializer.is_valid():
-#         serializer.save()
-#         return Response(serializer.data , status=status.HTTP_200_OK)
-#     return Response(serializer.errors , status=status.HTTP_400_BAD_REQUEST)
-
-# @api_view(['DELETE'])
-# @permission_classes([IsAuthenticated])
-# def profile_delete(request):
-#     user = request.user
-#     data = request.data
-#     user.profile.delete_profile()
-#     return Response( status=status.HTTP_200_OK)
-
-
-
-
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+    def put(self, request, *args, **kwargs):
+        user = request.user
+        data = request.data
+        serializer = ChangePasswordSerializer(instance=user, data = data, partial = True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=Status.OK)
+        return Response(serializer.errors ,status=Status.BAD_REQUEST)

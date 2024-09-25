@@ -10,42 +10,40 @@ from user_profile.models import Profile
 
 
 class CommentManager(models.Manager):
-    @classmethod
-    def create_comment(cls ,data):
+
+    def create_comment(data):
         return Comment.objects.create(**data)
     
-    @classmethod
-    def delete_post(cls,pk):
+    def delete_comment(pk):
         return get_object_or_404(Comment , pk = pk).delete()
-    
-    @classmethod
-    def update(cls,comment,data):
+
+    def update_comment(comment, data):
         comment.content = data.get('content' , comment.content)
         comment.image = data.get('image' , comment.image)
         comment.save()
         return comment
     
-    @classmethod
-    def who_liked(cls , pk):
-        return get_object_or_404(Comment , pk = pk).liked_by.all()
+    def who_liked(pk):
+        return get_object_or_404(Comment , pk = pk).like.all()
     
-    @classmethod
-    def total_likes(cls , pk):
-        return get_object_or_404(Comment , pk = pk).liked_by.all().count()
     
-    @classmethod
-    def add_like(cls,pk,user):
-        return get_object_or_404(Comment , pk = pk).like.add(user)
+    def add_like(pk, profile):
+        return get_object_or_404(Comment , pk = pk).like.add(profile)
     
-    @classmethod
-    def remove_like(cls,pk,user):
-        return get_object_or_404(Comment,pk=pk).liked_by.remove(user)
+    def remove_like(pk, profile):
+        return get_object_or_404(Comment,pk=pk).like.remove(profile)
+    
+    def get_comments(post):
+        return post.post_comment.all()
+    
+    def get_comment(pk):
+        return get_object_or_404(Comment , pk = pk)
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, related_name='post_comment', on_delete=models.CASCADE)
     author = models.ForeignKey( Profile, related_name='author_comment', on_delete=models.CASCADE)
     content = models.TextField(max_length=500)
-    image = models.ImageField(upload_to='posts/images' , null=True , blank=True)
+    image = models.ImageField(upload_to='comments/images' , null=True , blank=True)
     date = models.DateField(auto_now_add=True)
     time = models.TimeField(auto_now_add=True)
     like = models.ManyToManyField(Profile , related_name="comment_liked_by")

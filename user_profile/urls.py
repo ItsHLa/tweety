@@ -1,14 +1,15 @@
 from django.contrib import admin
 from django.urls import path
 
-from accounts import views
+from . import views
 
 urlpatterns = [
-    ## following stuff
-    # path('get_following/', views.get_following , name='get_following'),
-    # path('get_followers/', views.get_followers , name='get_followers'),
-    # path('follow/<pk>', views.follow , name='followe'),
-    # path('unfollow/<pk>', views.unfollow , name='unfollow'),
-    # ## profile stuff
-    # path('profile_info/', views.profile_info , name='profile_info'),
+    ## info |  delete |  update
+    path('',views.ProfileView.as_view(),name='profile'),
+    ## follow | unfollow
+    path('follow/<pk>', views.FollowView.as_view() , name='follow'),
+    # followers
+    path('followers/', views.FollowersView.as_view() , name='follower'),
+    #following
+    path('following/', views.FollowingView.as_view() , name='following'),
 ]

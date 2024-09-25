@@ -19,12 +19,12 @@ class ProfileSerializer(ModelSerializer):
 
 class ProfileInfoSerializer(ModelSerializer):
     user = UserSerializer()
-    followers = serializers.SerializerMethodField()
-    following = serializers.SerializerMethodField()
+    followers = serializers.SerializerMethodField(method_name='total_followers')
+    following = serializers.SerializerMethodField(method_name="total_following")
     
     class Meta:
         model = Profile
-        fields = ['id','user','profile_pic','bio','followers','following']
+        fields = ['id','user','profile_pic','bio','following' , "followers"]
     
     def total_followers(self , profile):
         return profile.followed_by.count()
